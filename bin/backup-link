@@ -6,8 +6,7 @@
 #
 
 
-# Unter welchem Pfad wird gesichert?
-DATA_PATH="/volume1/homes/Backup/puavo/home"
+. ./backup.conf
 
 # ### Let`s Rock`n`Roll....
 
