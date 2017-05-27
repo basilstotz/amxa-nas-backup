@@ -1,0 +1,5 @@
+# m h  dom mon dow   command
+22 22 * * * ssh root@10.249.0.194 /volume1/homes/admin/bin/backup-from-bootserver &
+
+
+

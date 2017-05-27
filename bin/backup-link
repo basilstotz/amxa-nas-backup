@@ -1,0 +1,35 @@
+#!/bin/sh
+#
+# Script rotiert Backup-Verzeichnisse
+#
+# Aufruf: backup-link>
+#
+
+
+# Unter welchem Pfad wird gesichert?
+DATA_PATH="/volume1/homes/Backup/puavo/home"
+
+# ### Let`s Rock`n`Roll....
+
+echo "symbolische links neu anlegen"
+# LINKS
+# symbolische links l√schen
+
+for N in $(find $DATA_PATH -maxdepth 1 -type l); do
+  rm $N
+done
+
+# und neue anlegen 
+for N in $(find $DATA_PATH -maxdepth 1 -type d -name ".daily.?"); do
+  # echo $N
+  #if ! test -e $DATA_PATH/$N.date; then echo "$N.date not found";fi
+  ln -s $N $(dirname $N)/$(cat $N.date)
+done
+
+# und neue anlegen 
+for N in $(find $DATA_PATH -maxdepth 1 -type d -name ".weekly.?"); do
+  # echo $N
+  #if ! test -e $DATA_PATH/$N.date; then echo "$N.date not found";fi
+  ln -s $N $(dirname $N)/$(cat $N.date)
+done
+

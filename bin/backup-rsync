@@ -1,0 +1,57 @@
+#!/bin/sh
+#
+# Script zieht per rsync Backups
+#
+# Aufruf: backup-rsync 
+#
+
+# Welcher Pfad wird gesichert
+SRC_PATH="/home"
+
+# Unter welchem Pfad wird gesichert?
+DATA_PATH="/volume1/homes/Backup/puavo/home"
+
+# Liste von Dateipattern, die nicht gebackupt werden sollen
+EXCLUDES=""
+
+# Weitere Optionen fÃ¼r rsync. Ggf. macht eine Limitierung 
+# der Bandbreite Sinn, Angabe in kbyte/sec:
+# EXTRAOPT="--bwlimit=256"
+EXTRAOPT=""
+
+
+# Ggf. Verzeichnis anlegen
+if ! [ -d $DATA_PATH/.snapshot ] ; then
+        mkdir -p $DATA_PATH/.snapshot
+fi
+
+# Los geht`s: rsync zieht ein Vollbackup
+echo "Starting rsync backup "
+logger "Starting rsync backup "
+
+rsync  -avz --numeric-ids -e ssh --delete --delete-excluded   \
+        --exclude-from="$EXCLUDES"  $EXTRAOPT                   \
+        bootserver:/$SRC_PATH/ $DATA_PATH/.snapshot
+
+# RÃ¼ckgabewert prÃ¼fen.
+# 0 = fehlerfrei, 
+# 24 ist harmlos; tritt auf, wenn wÃ¤hrend der Laufzeit
+# von rsync noch (/tmp?) Dateien verÃ¤ndert oder gelÃ¶scht wurden.
+# Alles andere ist fatal -- siehe man (1) rsync
+if ! [ $? = 24 -o $? = 0 ] ; then
+   echo "Fatal: rsync finished with errors!"
+   logger "Fatal: rsync finished with errors!"
+fi
+
+# Verzeichnis anfassen, um Backup-Datum zu speichern
+touch $DATA_PATH/.snapshot
+echo "$(date +'%F--%H%M%S'  -r $DATA_PATH/.snapshot)" > $DATA_PATH/.snapshot.date
+
+# Fertig!
+echo "Finished rsync backup "
+logger "Finished rsync backup "
+
+# Sicher ist sicher...
+sync
+
+

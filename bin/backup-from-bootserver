@@ -1,0 +1,9 @@
+#!/bin/sh
+echo
+echo "***********************Backup*************************"
+
+/volume1/homes/admin/bin/backup-rsync 
+/volume1/homes/admin/bin/backup-rotate
+/volume1/homes/admin/bin/backup-link
+exit
+

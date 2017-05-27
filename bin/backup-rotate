@@ -1,0 +1,82 @@
+#!/bin/sh
+#
+# Script rotiert Backup-Verzeichnisse
+# http://www.heinlein-partner.de
+#
+# Aufruf: backup-rotate >
+#
+
+
+MAX_DAILY=7
+MAX_WEEKLY=8
+
+
+# Unter welchem Pfad wird gesichert?
+DATA_PATH="/volume1/homes/Backup/puavo/home"
+
+# ### Let`s Rock`n`Roll....
+
+
+echo "Rotating snapshots "
+logger "Rotating snapshots "
+
+cd $DATA_PATH
+# ROTATE
+#
+# Das hoechste Snapshot abloeschen
+if [ -d .daily.$MAX_DAILY ] ; then
+
+   #every sunday do
+   if test "$(date +%w)" = 0; then
+   # 
+   # weekly
+   #
+        # remove upper weekly
+        if test -d .weekly.$MAX_WEEKLY; then
+          rm -rf .weekly.$MAX_WEEKLY
+          rm -f .weekly.$MAX_WEEKLY.date
+        fi
+        #rotate all others
+        MWMMO=$(( $MAX_WEEKLY - 1 ))        
+        for OLD in $(seq $MWMMO -1 1);do
+           if test -d .weekly.$OLD; then
+              NEW=$(( $OLD + 1 ))
+              mv  .weekly.$OLD .weekly.$NEW
+              mv  .weekly.$OLD.date .weekly.$NEW.date
+           fi
+        done
+        # mv maxdaily to weekly.1
+        mv  .daily.$MAX_DAILY .weekly.1
+        mv  .daily.$MAX_DAILY.date .weekly.1.date   
+   else
+        rm -rf .daily.$MAX_DAILY
+		rm -f .daily.$MAX_DAILY.date
+   fi
+fi
+
+CMMO=$(( $MAX_DAILY -1 ))
+
+
+
+# Alle anderen Snapshots eine Nummer nach oben verschieben
+#for OLD in 6 5 4 3 2 1  ; do
+
+for OLD in $(seq $CMMO -1 1);do
+        if [ -d .daily.$OLD ] ; then
+	        NEW=$(( $OLD + 1 ))
+		       # Datum sichern
+		       ######	 touch $DATA_PATH/.timestamp -r $DATA_PATH/$USERNAME/.daily.$OLD
+		    mv .daily.$OLD.date .daily.$NEW.date
+            mv .daily.$OLD .daily.$NEW
+		       # Datum zurueckspielen
+		       ####### touch $DATA_PATH/$USERNAME/.daily.$NEW -r $DATA_PATH/.timestamp
+        fi
+done
+
+# Snapshot von Level-0 per hardlink-Kopie nach Level-1 kopieren
+#if [ -d .snapshot ] ; then
+        cp -al .snapshot .daily.1
+        cp .snapshot.date .daily.1.date 
+#fi
+
+
